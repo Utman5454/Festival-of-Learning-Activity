@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Can I Trick Your Brain in 30 Minutes?</title>
+<style>
+:root{
+  --bg:#10151e;
+  --field:#171e2a;
+  --ink:#ede7dc;
+  --mute:#77839a;
+  --line:#2a3446;
+
+  /* Stimulus colours. These are DATA, never decoration. */
+  --red:#e8402f;
+  --green:#1e9e5a;
+  --blue:#3a76ee;
+  --yellow:#efc023;
+  --purple:#9a56d6;
+  --orange:#ee7a25;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  overflow:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- deck ---------- */
+.slide{
+  position:fixed; inset:0;
+  display:none;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  padding:5vh 6vw 9vh;
+  gap:2.2vh;
+}
+.slide.on{display:flex}
+
+/* ---------- type ---------- */
+.kicker{
+  font-size:clamp(13px,1.5vw,22px);
+  font-weight:600;
+  letter-spacing:.14em;
+  color:var(--mute);
+}
+h1{
+  font-size:clamp(38px,7.2vw,110px);
+  font-weight:800;
+  line-height:.98;
+  letter-spacing:-.03em;
+  max-width:17ch;
+}
+h2{
+  font-size:clamp(30px,5vw,74px);
+  font-weight:750;
+  line-height:1.02;
+  letter-spacing:-.02em;
+  max-width:20ch;
+}
+.say{
+  font-family:Georgia,"Iowan Old Style","Times New Roman",serif;
+  font-size:clamp(19px,2.5vw,38px);
+  line-height:1.45;
+  max-width:26ch;
+  color:var(--ink);
+}
+.say.wide{max-width:34ch}
+.small{
+  font-size:clamp(15px,1.6vw,24px);
+  color:var(--mute);
+  max-width:44ch;
+  line-height:1.5;
+}
+
+[data-step]{
+  opacity:0;
+  transition:opacity .28s ease;
+}
+[data-step].shown{opacity:1}
+@media (prefers-reduced-motion:reduce){[data-step]{transition:none}}
+
+/* ---------- chrome ---------- */
+#bar{
+  position:fixed; left:0; bottom:0; height:3px;
+  background:var(--ink); opacity:.5;
+  transition:width .25s ease;
+  z-index:60;
+}
+#meta{
+  position:fixed; right:2.2vw; bottom:2.2vh;
+  font-size:13px; color:var(--mute);
+  display:flex; gap:1.4em; align-items:baseline;
+  z-index:60;
+}
+#meta b{font-weight:600;color:var(--ink);font-variant-numeric:tabular-nums}
+#notes{
+  position:fixed; left:0; right:0; bottom:0;
+  background:var(--field);
+  border-top:1px solid var(--line);
+  padding:2.4vh 6vw 4vh;
+  font-size:clamp(14px,1.35vw,19px);
+  line-height:1.55;
+  color:var(--ink);
+  text-align:left;
+  display:none;
+  z-index:70;
+  max-height:42vh; overflow:auto;
+}
+#notes.on{display:block}
+#notes strong{display:block;color:var(--mute);font-size:13px;letter-spacing:.12em;margin-bottom:.7em;font-weight:600}
+#help{
+  position:fixed; inset:0; background:rgba(16,21,30,.97);
+  display:none; z-index:80;
+  align-items:center; justify-content:center;
+}
+#help.on{display:flex}
+#help table{border-collapse:collapse;font-size:clamp(15px,1.5vw,21px)}
+#help td{padding:.5em 1.6em;border-bottom:1px solid var(--line)}
+#help td:first-child{font-weight:700;text-align:right;white-space:nowrap}
+#help td:last-child{color:var(--mute);text-align:left}
+
+/* ---------- stroop ---------- */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:2.2vh 2vw;
+  width:90vw;
+}
+.grid span{
+  font-size:clamp(22px,3.9vw,72px);
+  font-weight:800;
+  letter-spacing:-.03em;
+  white-space:nowrap;
+}
+.c-red{color:var(--red)} .c-green{color:var(--green)} .c-blue{color:var(--blue)}
+.c-yellow{color:var(--yellow)} .c-purple{color:var(--purple)} .c-orange{color:var(--orange)}
+
+#clock{
+  font-size:clamp(30px,4vw,62px);
+  font-weight:700;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:-.02em;
+}
+#clock.idle{color:var(--mute)}
+
+/* ---------- word flash ---------- */
+#flash{
+  font-size:clamp(54px,12vw,190px);
+  font-weight:800;
+  letter-spacing:-.04em;
+  min-height:1.1em;
+  line-height:1.1;
+}
+
+/* ---------- recognition test ---------- */
+.probe{
+  display:flex; align-items:center; gap:3vw;
+  font-size:clamp(30px,5.4vw,86px);
+  font-weight:800;
+  letter-spacing:-.02em;
+}
+.verdict{
+  font-family:Georgia,serif;
+  font-style:italic;
+  font-weight:400;
+  font-size:clamp(16px,2vw,30px);
+  letter-spacing:0;
+  padding:.25em .8em;
+  border:1px solid var(--line);
+  border-radius:2px;
+  color:var(--mute);
+  white-space:nowrap;
+}
+.verdict.never{
+  color:#fff; background:var(--red); border-color:var(--red);
+  font-style:normal; font-weight:600;
+}
+
+/* ---------- anchoring ---------- */
+.eyes{
+  font-size:clamp(34px,6vw,96px);
+  font-weight:800; line-height:1.05; letter-spacing:-.02em;
+}
+.anchorq{
+  font-size:clamp(28px,4.4vw,68px);
+  font-weight:750; line-height:1.15; max-width:18ch;
+}
+.tally{display:flex;gap:4vw;align-items:flex-end;margin-top:1vh}
+.tally label{display:block;font-size:14px;color:var(--mute);margin-bottom:.6em}
+.tally input{
+  width:5.5ch; background:transparent; border:none;
+  border-bottom:2px solid var(--line);
+  color:var(--ink); font:inherit;
+  font-size:clamp(34px,5vw,72px); font-weight:800;
+  text-align:center; padding:0 .1em .1em;
+}
+.tally input:focus{outline:none;border-bottom-color:var(--ink)}
+.bars{width:70vw;margin-top:2vh;display:none;flex-direction:column;gap:1.4vh}
+.bars.on{display:flex}
+.barrow{display:flex;align-items:center;gap:1.2vw;font-size:clamp(14px,1.5vw,20px)}
+.barrow i{font-style:normal;color:var(--mute);width:9ch;text-align:right;flex:none}
+.barrow u{
+  text-decoration:none;height:clamp(18px,2.6vh,30px);
+  background:var(--ink); display:block; min-width:2px;
+  transition:width .5s ease;
+}
+.barrow b{font-variant-numeric:tabular-nums;font-weight:700}
+
+/* ---------- change blindness ---------- */
+#flickwrap{width:min(84vw,120vh);aspect-ratio:3/2}
+#flickwrap svg{width:100%;height:100%;display:block;border:1px solid var(--line)}
+#ring{opacity:0;transition:opacity .3s}
+#ring.on{opacity:1}
+
+/* ---------- video ---------- */
+.vidbox{width:min(84vw,140vh);aspect-ratio:16/9;background:#000;border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+.vidbox video{width:100%;height:100%}
+.fallback{padding:4vh;color:var(--mute);font-size:clamp(15px,1.7vw,24px);line-height:1.6}
+.fallback a{color:var(--ink)}
+
+/* ---------- score ---------- */
+.score{text-align:left;display:flex;flex-direction:column;gap:1.5vh}
+.score div{font-size:clamp(19px,2.6vw,40px);font-weight:600}
+.score span{color:var(--mute);font-weight:400;font-family:Georgia,serif;font-style:italic}
+.bands{display:flex;flex-direction:column;gap:1vh;text-align:left;font-size:clamp(16px,2vw,30px)}
+.bands em{font-style:normal;color:var(--mute);font-variant-numeric:tabular-nums;display:inline-block;width:3.5ch}
+</style>
+</head>
+<body>
+
+<!-- ================= 1 ================= -->
+<section class="slide on" data-notes="Wait for people to sit. Say the title out loud, then press → . Everything runs on → and ← alone, so a clicker works. N for notes, F for fullscreen, ? for all keys.">
+  <h1>Can I trick your brain in 30 minutes?</h1>
+  <p class="say" data-step>Five experiments. One unsuspecting audience.</p>
+</section>
+
+<!-- ================= 2 ================= -->
+<section class="slide" data-notes="Deliver this warmly. The promise of being fooled is what buys their attention. Don't over-explain, the demos do the work.">
+  <h2>Here is the deal</h2>
+  <p class="say wide" data-step>Over the next half hour I am going to try to fool you. Misremembering things you never heard, missing something enormous, confidently giving me answers you have no business being confident about.</p>
+  <p class="say wide" data-step>We are all going to fall for most of it, and that is rather the point.</p>
+</section>
+
+<!-- ================= 3 ================= -->
+<section class="slide" data-notes="Experiment 1. Explain the rule clearly BEFORE showing the card, or the first demo is wasted.">
+  <p class="kicker">Experiment one</p>
+  <h2>Say the colour, not the word</h2>
+  <p class="say" data-step>Everyone. Out loud, together. Left to right, as fast as you can.</p>
+</section>
+
+<!-- ================= 4 ================= -->
+<section class="slide" id="stroop-a" data-notes="Easy card: word and ink match. Timer starts automatically; press S to stop it when the room finishes, S again to rerun. Note the time out loud; you'll compare it in a moment.">
+  <div class="grid">
+    <span class="c-red">RED</span><span class="c-blue">BLUE</span><span class="c-green">GREEN</span><span class="c-yellow">YELLOW</span>
+    <span class="c-purple">PURPLE</span><span class="c-orange">ORANGE</span><span class="c-blue">BLUE</span><span class="c-red">RED</span>
+    <span class="c-green">GREEN</span><span class="c-yellow">YELLOW</span><span class="c-orange">ORANGE</span><span class="c-purple">PURPLE</span>
+  </div>
+  <div id="clock" class="idle">0.0</div>
+</section>
+
+<!-- ================= 5 ================= -->
+<section class="slide" id="stroop-b" data-notes="The evil card. Same instruction: say the INK colour. The room will audibly fall apart. Let that land before pressing on. S stops the timer.">
+  <div class="grid">
+    <span class="c-blue">RED</span><span class="c-yellow">BLUE</span><span class="c-red">GREEN</span><span class="c-purple">YELLOW</span>
+    <span class="c-green">PURPLE</span><span class="c-blue">ORANGE</span><span class="c-orange">BLUE</span><span class="c-green">RED</span>
+    <span class="c-red">GREEN</span><span class="c-purple">YELLOW</span><span class="c-yellow">ORANGE</span><span class="c-orange">PURPLE</span>
+  </div>
+  <div id="clock2" class="idle">0.0</div>
+</section>
+
+<!-- ================= 6 ================= -->
+<section class="slide" data-notes="Keep this short, 30 seconds. The teaching hook: expertise makes some processes automatic and unstoppable. That is usually a gift and occasionally a trap.">
+  <h2>Reading is not optional</h2>
+  <p class="say wide" data-step>You have read so much for so long that reading now happens to you. You cannot switch it off, so it interferes with the thing you were actually asked to do.</p>
+  <p class="small" data-step>The mechanism: two cognitive processes compete for the same response channel: the automatic one (reading) wins because it finishes first.</p>
+  <p class="small" data-step>Stroop, 1935. Still undefeated.</p>
+</section>
+
+<!-- ================= 7 ================= -->
+<section class="slide" data-notes="Experiment 2. Say it is a memory test. Do NOT let anyone write anything down: that kills the effect. Watch for pens. Press → to trigger the sequence.">
+  <p class="kicker">Experiment two</p>
+  <h2>A short memory test</h2>
+  <p class="say" data-step>Fifteen words. Watch, don't write. I'll ask you about them later.</p>
+</section>
+
+<!-- ================= 8 ================= -->
+<section class="slide" id="wordslide" data-notes="Runs automatically: 3-2-1 then 15 words at about a second each. Say nothing over it. When it ends, move straight on. The gap before the test is doing real work.">
+  <div id="flash">&nbsp;</div>
+</section>
+
+<!-- ================= 9 ================= -->
+<section class="slide" data-notes="This is the retention interval disguised as the next experiment. Do not mention the words again until slide 15.">
+  <h2>Hold on to those</h2>
+  <p class="say" data-step>We'll come back. Something else first.</p>
+</section>
+
+<!-- ================= 10 ================= -->
+<section class="slide" data-notes="Experiment 3. Split the room down the middle by eye and point at each half so they know which they are.">
+  <p class="kicker">Experiment three</p>
+  <h2>Two halves of a room</h2>
+  <p class="say" data-step>Left half and right half. Pick your side and remember it.</p>
+</section>
+
+<!-- ================= 11 ================= -->
+<section class="slide" data-notes="LEFT SIDE ONLY. Wait until the right side genuinely has their eyes shut. Ask for a shout: older or younger? They will all say younger.">
+  <p class="eyes">Right side: eyes closed</p>
+  <p class="anchorq" data-step>Was Gandhi older or younger than <b>9</b> when he died?</p>
+</section>
+
+<!-- ================= 12 ================= -->
+<section class="slide" data-notes="RIGHT SIDE ONLY. Left side eyes shut now. Same question, different number. Again they all say younger.">
+  <p class="eyes">Left side: eyes closed</p>
+  <p class="anchorq" data-step>Was Gandhi older or younger than <b>140</b> when he died?</p>
+</section>
+
+<!-- ================= 13 ================= -->
+<section class="slide" data-notes="Everyone eyes open. Collect a rough average from each side by shouting, or take three guesses per side and average in your head. Type the two numbers in, then press → for the bars.">
+  <h2>So how old was he?</h2>
+  <p class="small">Best guess. Shout it out, one side at a time.</p>
+  <div class="tally">
+    <div><label>Left side average</label><input id="aL" type="number" inputmode="numeric" placeholder="-"></div>
+    <div><label>Right side average</label><input id="aR" type="number" inputmode="numeric" placeholder="-"></div>
+  </div>
+  <div class="bars" id="bars" data-step>
+    <div class="barrow"><i>Anchor 9</i><u id="barL"></u><b id="numL"></b></div>
+    <div class="barrow"><i>Anchor 140</i><u id="barR"></u><b id="numR"></b></div>
+    <div class="barrow"><i>Actual</i><u id="barT" style="opacity:.35"></u><b>78</b></div>
+  </div>
+</section>
+
+<!-- ================= 14 ================= -->
+<section class="slide" data-notes="If the effect didn't show, say so cheerfully: that IS the honest version of psychology, and the room will like you more for it. He was 78.">
+  <h2>A number you knew was wrong still moved you</h2>
+  <p class="say wide" data-step>Nobody believed Gandhi was nine. It pulled the estimate anyway, because we adjust from whatever number we encountered first, and we nearly always stop adjusting too soon.</p>
+  <p class="small" data-step>The mechanism: the anchor becomes the starting point for a mental search, and the search stops the moment a plausible value appears.</p>
+  <p class="small" data-step>Anchoring. Tversky and Kahneman, 1974. It is why salary negotiations, sentencing decisions and every price tag you have ever seen start with a number someone else chose.</p>
+</section>
+
+<!-- ================= 15 ================= -->
+<section class="slide" data-notes="Back to the memory test. Read each word aloud and ask for hands: 'who saw this one?' Count roughly. Then press → to stamp it. SLEEP is the trap: milk the pause before revealing.">
+  <p class="kicker">Experiment two, continued</p>
+  <h2>Which of these did you see?</h2>
+  <p class="small" data-step>Hands up. Be honest.</p>
+</section>
+
+<!-- ================= 16 ================= -->
+<section class="slide" id="probes" data-notes="One at a time: word appears, take the vote, press → for the verdict, press → for the next word. SLEEP is fourth. Expect most of the room to have their hand up.">
+  <div class="probe" data-step>DREAM <span class="verdict" data-step>you saw this</span></div>
+  <div class="probe" data-step>PILLOW <span class="verdict never" data-step>never shown</span></div>
+  <div class="probe" data-step>TIRED <span class="verdict" data-step>you saw this</span></div>
+  <div class="probe" data-step>SLEEP <span class="verdict never" data-step>never shown</span></div>
+</section>
+
+<!-- ================= 17 ================= -->
+<section class="slide" data-notes="The strongest moment of the session. Land it slowly. The eyewitness line usually gets an audible reaction.">
+  <h2>You remembered a word that was never there</h2>
+  <p class="say wide" data-step>Every word pointed at sleep, so your brain filed the gist and quietly manufactured the rest. The false memory feels exactly like the real ones. There is no wobble, no asterisk.</p>
+  <p class="small" data-step>The mechanism: memory stores meaning and structure, not a recording, so the brain reconstructs plausible details on retrieval, and sometimes reconstructs ones that were never there.</p>
+  <p class="small" data-step>Deese, Roediger &amp; McDermott. The same machinery underwrites a confident, sincere and completely wrong eyewitness.</p>
+</section>
+
+<!-- ================= 18 ================= -->
+<section class="slide" data-notes="Experiment 4. Give the counting instruction BEFORE playing. If the video won't load, the link is on screen, or skip; the session survives without it.">
+  <p class="kicker">Experiment four</p>
+  <h2>Count the passes</h2>
+  <p class="say" data-step>Players in white shirts only. Count every pass. Out loud is cheating.</p>
+</section>
+
+<!-- ================= 19 ================= -->
+<section class="slide" id="vid1" data-notes="Plays automatically. P pauses. Ask for counts first. Let people argue about 14 vs 16, THEN ask who saw the gorilla.">
+  <div class="vidbox">
+    <video id="v1" playsinline controls preload="auto">
+      <source src="videos/gorilla.mp4" type="video/mp4">
+    </video>
+    <div class="fallback" id="f1" hidden>
+      No local video file found.<br><br>
+      Open <a href="https://www.youtube.com/watch?v=vJG698U2Mvo" target="_blank" rel="noopener">the selective attention test</a> in a new tab, or drop <b>gorilla.mp4</b> into a <b>videos</b> folder next to this file.
+    </div>
+  </div>
+</section>
+
+<!-- ================= 20 ================= -->
+<section class="slide" data-notes="Roughly half a room typically misses it. Do not mock the ones who missed it: they were following instructions perfectly.">
+  <h2>Attention is a spotlight, not a floodlight</h2>
+  <p class="say wide" data-step>Focusing is not turning something up; it is turning almost everything else off. What you don't attend to, you don't see, even when it is right in front of you.</p>
+  <p class="small" data-step>The mechanism: the brain only processes unattended visual information up to a basic level; if an object doesn't trigger a priority signal, it never reaches conscious awareness.</p>
+  <p class="small" data-step>Simons &amp; Chabris, 1999. The people who counted most accurately are usually the ones who missed the most.</p>
+</section>
+
+<!-- ================= 21 ================= -->
+<section class="slide" data-notes="Experiment 5. The flicker starts by itself on the next slide. Nobody shouts until they are sure. Let it run a full minute: the frustration is the demo.">
+  <p class="kicker">Experiment five</p>
+  <h2>Something in this room changes</h2>
+  <p class="say" data-step>One thing. It is not subtle. Hand up when you see it.</p>
+</section>
+
+<!-- ================= 22 ================= -->
+<section class="slide" id="flicker" data-notes="The flicker starts on its own. Let it run up to a minute: the frustration is the demo. The change is one of the chairs, which vanishes entirely. Press → once to freeze and ring it, → again to move on.">
+    <div id="flickwrap">
+    <span data-step hidden></span>
+    <svg viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg" aria-label="A conference table scene">
+      <!-- background -->
+      <rect width="600" height="400" fill="#cec8b5"/>
+      <rect y="350" width="600" height="50" fill="#bdb6a0"/>
+
+      <!-- TABLE -->
+      <polygon points="50,195 550,195 590,375 10,375" fill="#7a5530"/>
+      <polygon points="50,195 550,195 590,375 10,375" fill="none" stroke="#5c3e22" stroke-width="3"/>
+      <!-- table near edge highlight -->
+      <line x1="10" y1="375" x2="590" y2="375" stroke="#6a4828" stroke-width="5"/>
+
+      <!-- CHAIRS (backs visible above table) -->
+      <rect x="55"  y="150" width="76" height="48" rx="8" fill="#3d5245"/>
+      <!-- THE CHANGE: this chair is present in state A, gone in state B -->
+      <g id="changer">
+        <rect x="195" y="143" width="76" height="50" rx="8" fill="#3d5245"/>
+      </g>
+      <rect x="335" y="143" width="76" height="50" rx="8" fill="#3d5245"/>
+      <rect x="470" y="150" width="72" height="48" rx="8" fill="#3d5245"/>
+
+      <!-- LAPTOP (top-left table area) -->
+      <rect x="68"  y="208" width="118" height="78" rx="3" fill="#b0a898"/>
+      <rect x="72"  y="212" width="110" height="66" rx="2" fill="#0e1825"/>
+      <rect x="77"  y="217" width="100" height="56" fill="#162438"/>
+      <rect x="81"  y="223" width="55"  height="4"  fill="#2a5088" opacity=".8"/>
+      <rect x="81"  y="231" width="72"  height="2.5" fill="#666" opacity=".5"/>
+      <rect x="81"  y="237" width="60"  height="2.5" fill="#666" opacity=".5"/>
+      <rect x="81"  y="243" width="68"  height="2.5" fill="#666" opacity=".5"/>
+      <!-- trackpad -->
+      <rect x="68"  y="284" width="118" height="9" rx="3" fill="#a09080"/>
+      <rect x="99"  y="286" width="56"  height="5" rx="2" fill="#8a7a6a"/>
+
+      <!-- COFFEE MUG 1 (white, near laptop) -->
+      <rect x="200" y="218" width="30" height="34" rx="5" fill="#f0ede0" stroke="#c8c4b0" stroke-width="1.5"/>
+      <path d="M230,226 Q244,226 244,235 Q244,244 230,244" fill="none" stroke="#c8c4b0" stroke-width="2"/>
+      <rect x="203" y="218" width="24" height="7" rx="2" fill="#e0ddd0"/>
+      <!-- coffee surface -->
+      <ellipse cx="215" cy="219" rx="12" ry="3.5" fill="#7a4820" opacity=".6"/>
+
+      <!-- COFFEE MUG 2 (dark, centre) -->
+      <rect x="270" y="232" width="27" height="30" rx="5" fill="#3a2010" stroke="#2a1408" stroke-width="1.5"/>
+      <path d="M297,240 Q310,240 310,248 Q310,256 297,256" fill="none" stroke="#2a1408" stroke-width="2"/>
+      <rect x="273" y="232" width="21" height="6" rx="2" fill="#2a1408"/>
+
+      <!-- WATER BOTTLE (tall, centre-right) -->
+      <rect x="370" y="200" width="20" height="68" rx="7" fill="#b8d4ee" stroke="#90aec8" stroke-width="1.5" opacity=".9"/>
+      <rect x="373" y="200" width="14" height="11" rx="3.5" fill="#90aec8"/>
+      <rect x="372" y="228" width="16" height="40" rx="4" fill="#98c0e0" opacity=".45"/>
+      <!-- label -->
+      <rect x="372" y="224" width="16" height="22" fill="#ddeefa" opacity=".5"/>
+
+      <!-- PHONE (face up, right of centre) -->
+      <rect x="312" y="258" width="42" height="70" rx="8" fill="#181820" stroke="#2a2a30" stroke-width="1.5"/>
+      <rect x="316" y="263" width="34" height="58" rx="5" fill="#222840"/>
+      <rect x="319" y="268" width="28" height="6"  fill="#2858b0" opacity=".8"/>
+      <rect x="319" y="278" width="19" height="2.5" fill="#777" opacity=".6"/>
+      <rect x="319" y="284" width="24" height="2.5" fill="#777" opacity=".6"/>
+      <rect x="319" y="290" width="16" height="2.5" fill="#777" opacity=".6"/>
+      <rect x="327" y="314" width="12" height="3" rx="1.5" fill="#444"/>
+
+      <!-- NOTEBOOK (bottom-left) -->
+      <rect x="58"  y="298" width="102" height="60" rx="3" fill="#f4f0e0" stroke="#c4c0a8" stroke-width="1.5"/>
+      <rect x="58"  y="298" width="11"  height="60" rx="3" fill="#c4c0a8"/>
+      <line x1="75" y1="313" x2="154" y2="313" stroke="#d4d0b8" stroke-width="1.2"/>
+      <line x1="75" y1="322" x2="148" y2="322" stroke="#d4d0b8" stroke-width="1.2"/>
+      <line x1="75" y1="331" x2="152" y2="331" stroke="#d4d0b8" stroke-width="1.2"/>
+      <line x1="75" y1="340" x2="145" y2="340" stroke="#d4d0b8" stroke-width="1.2"/>
+      <!-- pen -->
+      <rect x="69"  y="296" width="4.5" height="66" rx="2" fill="#1a40a0"/>
+      <polygon points="69,362 73.5,362 71.2,369" fill="#b89000"/>
+
+      <!-- NAME BADGE 1 (lanyard, left-centre) -->
+      <rect x="168" y="268" width="44" height="30" rx="3" fill="#eeeeee" stroke="#bbb" stroke-width="1.2"/>
+      <rect x="168" y="268" width="44" height="9"  fill="#1a40a0"/>
+      <rect x="172" y="282" width="28" height="2.5" fill="#aaa" rx="1"/>
+      <rect x="172" y="288" width="20" height="2.5" fill="#ccc" rx="1"/>
+      <circle cx="190" cy="268" r="2.5" fill="#ccc" stroke="#aaa" stroke-width="1"/>
+
+      <!-- NAME BADGE 2 (right, near mugs, stable) -->
+      <rect x="430" y="220" width="40" height="28" rx="3" fill="#eeeeee" stroke="#bbb" stroke-width="1.2"/>
+      <rect x="430" y="220" width="40" height="8"  fill="#902020"/>
+      <rect x="434" y="233" width="26" height="2.5" fill="#aaa" rx="1"/>
+      <circle cx="450" cy="220" r="2.5" fill="#ccc" stroke="#aaa" stroke-width="1"/>
+
+      <!-- PROJECTOR REMOTE (near notebook) -->
+      <rect x="175" y="305" width="20" height="44" rx="5" fill="#383838" stroke="#222" stroke-width="1.2"/>
+      <circle cx="185" cy="317" r="3.5" fill="#555"/>
+      <rect x="180" y="326" width="10" height="2.5" rx="1.2" fill="#484848"/>
+      <rect x="180" y="332" width="10" height="2.5" rx="1.2" fill="#484848"/>
+      <rect x="180" y="338" width="10" height="2.5" rx="1.2" fill="#484848"/>
+
+      <!-- STACK OF PAPERS (far right) -->
+      <rect x="478" y="268" width="88" height="68" rx="2" fill="#f6f3e4" stroke="#d4d0bc" stroke-width="1.2"/>
+      <rect x="482" y="264" width="88" height="68" rx="2" fill="#f3f0e0" stroke="#d0ccb8" stroke-width="1.2"/>
+      <rect x="486" y="260" width="88" height="68" rx="2" fill="#f0ede0" stroke="#ccc8b4" stroke-width="1.2"/>
+      <line x1="496" y1="275" x2="564" y2="275" stroke="#ccc8b0" stroke-width="1.2"/>
+      <line x1="496" y1="283" x2="556" y2="283" stroke="#ccc8b0" stroke-width="1.2"/>
+      <line x1="496" y1="291" x2="560" y2="291" stroke="#ccc8b0" stroke-width="1.2"/>
+      <line x1="496" y1="299" x2="550" y2="299" stroke="#ccc8b0" stroke-width="1.2"/>
+
+      <!-- FOLDER (blue, always blue, left side, DOES NOT CHANGE) -->
+      <rect x="210" y="295" width="72" height="52" rx="3" fill="#2858b0"/>
+      <rect x="210" y="295" width="72" height="10" rx="3" fill="#1e46a0"/>
+      <rect x="214" y="298" width="32" height="4" rx="1" fill="#3a6ad0"/>
+
+      <!-- FOLDER 2 (amber, right cluster, STABLE, does not change) -->
+      <rect x="400" y="272" width="68" height="50" rx="3" fill="#c88a20"/>
+      <rect x="400" y="272" width="68" height="10" rx="3" fill="#a87010"/>
+      <rect x="404" y="275" width="28" height="4" rx="1" fill="#e0a838"/>
+
+      <!-- REVEAL RING, sits over the changer -->
+      <rect id="ring" x="188" y="136" width="90" height="64" fill="none" stroke="#e8402f" stroke-width="6" rx="6" opacity="0"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ================= 23 ================= -->
+<section class="slide" data-notes="Point out that this is a large object in plain view, at the front, well lit, and they were staring straight at it.">
+  <h2>It was there the whole time</h2>
+  <p class="say wide" data-step>In normal vision, sudden motion attracts attention automatically. Remove that transient, even for a fraction of a second, and change becomes invisible until you search for it deliberately.</p>
+  <p class="small" data-step>The mechanism: we do not maintain a detailed visual memory between glances. We think we do, but the scene is only refreshed where attention is pointed.</p>
+  <p class="small" data-step>Change blindness. Rensink, O'Regan &amp; Clark, 1997.</p>
+</section>
+
+<!-- ================= 24 ================= -->
+<section class="slide" data-notes="Optional bonus if you have time in hand. Skip with → twice if you're running late.">
+  <p class="kicker">If there is time</p>
+  <h2>One last one, with your eyes shut</h2>
+  <p class="say" data-step>Listen. Then close your eyes and listen again. The sound changes.</p>
+</section>
+
+<!-- ================= 25 ================= -->
+<section class="slide" id="vid2" data-notes="Plays automatically. P replays. Play it twice: eyes open, then eyes closed. The syllable people hear changes because the mouth they see overrides the sound.">
+  <div class="vidbox">
+    <video id="v2" playsinline controls preload="auto">
+      <source src="videos/mcgurk.mp4" type="video/mp4">
+    </video>
+    <div class="fallback" id="f2" hidden>
+      No local video file found.<br><br>
+      Open <a href="https://www.youtube.com/watch?v=G-lN8vWm3m0" target="_blank" rel="noopener">the McGurk effect demonstration</a> in a new tab, or drop <b>mcgurk.mp4</b> into a <b>videos</b> folder next to this file.
+    </div>
+  </div>
+</section>
+
+<!-- ================= 26 ================= -->
+<section class="slide" data-notes="Run through the five quickly and get hands up for each. Keep it brisk and funny.">
+  <h2>How psychologically ordinary are you?</h2>
+  <div class="score">
+    <div data-step>Stroop second card: slower than the first <span>+1</span></div>
+    <div data-step>Remembered SLEEP <span>+1</span></div>
+    <div data-step>Guessed near your anchor <span>+1</span></div>
+    <div data-step>Missed the gorilla <span>+1</span></div>
+    <div data-step>Missed the vanishing chair <span>+1</span></div>
+  </div>
+</section>
+
+<!-- ================= 27 ================= -->
+<section class="slide" data-notes="Read the bands out. Get a show of hands for each. The 0-1 line always gets a laugh.">
+  <div class="bands">
+    <p data-step><em>0&#8209;1</em> Suspiciously resistant to psychology. Please see me afterwards.</p>
+    <p data-step><em>2&#8209;3</em> Standard issue human.</p>
+    <p data-step><em>4&#8209;5</em> Your brain is running almost entirely on shortcuts.</p>
+  </div>
+</section>
+
+<!-- ================= 28 ================= -->
+<section class="slide" data-notes="The actual message. Slow down. This is the bit they take back to their teaching, and it is the only serious minute in the session.">
+  <h2>None of this means people are stupid</h2>
+  <p class="say wide" data-step>These are not glitches. They are the same mechanisms that let you read instantly, remember the meaning of a conversation rather than every word, and make quick judgements under pressure.</p>
+  <p class="say wide" data-step>They work beautifully in the everyday. They only look like failures in carefully constructed situations designed to exploit them: experiments, and occasionally the real world too.</p>
+</section>
+
+<!-- ================= 29 ================= -->
+<section class="slide" data-notes="End here. Thank them, mention the tea, done.">
+  <h2>Thank you</h2>
+  <p class="say wide" data-step>The lesson, if there is one: a brain that works efficiently is not the same as a brain that works accurately. Most of the time that is fine.</p>
+</section>
+
+<!-- ---------- chrome ---------- -->
+<div id="bar"></div>
+<div id="meta"><span><b id="pos">1</b> / <b id="tot">29</b></span><span><b id="timer">00:00</b></span></div>
+<div id="notes"><strong>Presenter note</strong><span id="notetext"></span></div>
+<div id="help">
+  <table>
+    <tr><td>&rarr; / space / clicker</td><td>next</td></tr>
+    <tr><td>&larr;</td><td>back</td></tr>
+    <tr><td>Home</td><td>back to slide one</td></tr>
+    <tr><td>S</td><td>stop / restart the Stroop timer</td></tr>
+    <tr><td>P</td><td>play / pause video</td></tr>
+    <tr><td>N</td><td>presenter notes</td></tr>
+    <tr><td>T</td><td>start / reset session timer</td></tr>
+    <tr><td>F</td><td>fullscreen</td></tr>
+    <tr><td>?</td><td>close this</td></tr>
+  </table>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+var slides = [].slice.call(document.querySelectorAll('.slide'));
+var cur = 0, step = 0;
+document.getElementById('tot').textContent = slides.length;
+
+function steps(i){ return [].slice.call(slides[i].querySelectorAll('[data-step]')); }
+
+function render(){
+  slides.forEach(function(s,i){ s.classList.toggle('on', i===cur); });
+  steps(cur).forEach(function(el,i){ el.classList.toggle('shown', i<step); });
+  document.getElementById('pos').textContent = cur+1;
+  document.getElementById('bar').style.width = ((cur+1)/slides.length*100)+'%';
+  document.getElementById('notetext').textContent = slides[cur].getAttribute('data-notes')||'';
+
+  var ring = document.getElementById('ring');
+  if(slides[cur].id === 'flicker' && step >= 1){
+    stopFlicker(); ring.setAttribute('opacity','1');
+  } else {
+    if(ring) ring.setAttribute('opacity','0');
+  }
+
+  var bars = document.getElementById('bars');
+  if(bars.classList.contains('shown')){ bars.classList.add('on'); drawBars(); }
+  else bars.classList.remove('on');
+}
+
+function enter(){
+  var id = slides[cur].id;
+  if(id==='stroop-a') startClock('clock');
+  if(id==='stroop-b') startClock('clock2');
+  if(id==='wordslide') runWords();
+  if(id==='flicker' && step===0) startFlicker();
+  if(id==='vid1'||id==='vid2') openVideo(id==='vid1'?'v1':'v2', id==='vid1'?'f1':'f2');
+}
+function leave(){
+  stopClocks(); stopWords(); stopFlicker(); pauseVideos();
+}
+
+function next(){
+  var n = steps(cur).length;
+  if(step < n){ step++; render(); return; }
+  if(cur < slides.length-1){ leave(); cur++; step=0; render(); enter(); }
+}
+function prev(){
+  if(step > 0){ step--; render(); return; }
+  if(cur > 0){ leave(); cur--; step=steps(cur).length; render(); enter(); }
+}
+
+/* ---------- stroop timer ---------- */
+var ct=null, cel=null, t0=0;
+function startClock(id){
+  stopClocks();
+  cel = document.getElementById(id);
+  cel.classList.remove('idle');
+  t0 = Date.now();
+  cel.textContent = '0.0';
+  ct = setInterval(function(){
+    cel.textContent = ((Date.now()-t0)/1000).toFixed(1);
+  }, 87);
+}
+function stopClocks(){ if(ct){ clearInterval(ct); ct=null; } }
+/* S stops a running clock, or restarts a stopped one */
+function toggleClock(){
+  var id = slides[cur].id;
+  if(id!=='stroop-a' && id!=='stroop-b') return;
+  if(ct) stopClocks();
+  else startClock(id==='stroop-a' ? 'clock' : 'clock2');
+}
+
+/* ---------- word flash ---------- */
+var WORDS = ['bed','rest','awake','tired','dream','wake','snooze','blanket',
+             'doze','slumber','snore','nap','peace','yawn','drowsy'];
+var wt=null;
+function runWords(){
+  stopWords();
+  var el = document.getElementById('flash');
+  var seq = ['3','2','1'].concat(WORDS.map(function(w){return w.toUpperCase();})).concat(['']);
+  var i = 0;
+  el.textContent = '\u00A0';
+  wt = setInterval(function(){
+    if(i >= seq.length){ stopWords(); return; }
+    el.textContent = seq[i] || '\u00A0';
+    i++;
+  }, 1000);
+}
+function stopWords(){ if(wt){ clearInterval(wt); wt=null; } }
+
+/* ---------- anchoring bars ---------- */
+function drawBars(){
+  var L = parseFloat(document.getElementById('aL').value);
+  var R = parseFloat(document.getElementById('aR').value);
+  if(!isFinite(L) || L < 0) L = 0;
+  if(!isFinite(R) || R < 0) R = 0;
+  // Scale so the largest bar reaches ~65vw, giving room to show differences clearly
+  var dataMax = Math.max(L, R, 78);
+  var scale = 65 / dataMax;  // px per unit; bars cap at 65vw
+  // Enforce minimum visual separation when values are close (cosmetic only)
+  function pct(val){
+    if(!val) return '2px';
+    return (val * scale).toFixed(2)+'vw';
+  }
+  document.getElementById('barL').style.width = pct(L);
+  document.getElementById('barR').style.width = pct(R);
+  document.getElementById('barT').style.width = pct(78);
+  document.getElementById('numL').textContent = L ? Math.round(L) : '\u2014';
+  document.getElementById('numR').textContent = R ? Math.round(R) : '\u2014';
+}
+['aL','aR'].forEach(function(id){
+  document.getElementById(id).addEventListener('input', drawBars);
+});
+
+/* ---------- flicker ---------- */
+var ft=null, fphase=0;
+var SEQ = [['a',380],['blank',120],['b',380],['blank',120]];
+function paint(state){
+  var g = document.getElementById('changer');
+  var svg = document.querySelector('#flickwrap svg');
+  if(!g || !svg) return;
+  if(state==='blank'){
+    svg.style.visibility='hidden';
+  } else {
+    svg.style.visibility='visible';
+    // State A: the name badge is present. State B: it is gone. Nothing else moves.
+    g.style.opacity = (state==='a') ? '1' : '0';
+  }
+}
+function tick(){
+  var s = SEQ[fphase % SEQ.length];
+  paint(s[0]);
+  fphase++;
+  ft = setTimeout(tick, s[1]);
+}
+function startFlicker(){ if(ft) return; fphase=0; ft=setTimeout(function(){ ft=null; tick(); }, 800); }
+function stopFlicker(){
+  if(ft){ clearTimeout(ft); ft=null; }
+  paint('a');
+}
+
+/* ---------- video ---------- */
+var vwired = {};
+function openVideo(vid, fid){
+  var v = document.getElementById(vid);
+  if(!vwired[vid]){
+    vwired[vid] = true;
+    v.addEventListener('error', fail, true);
+    setTimeout(function(){ if(v.readyState === 0) fail(); }, 1500);
+  }
+  var play = v.play && v.play();
+  if(play && play.catch) play.catch(function(){});
+  function fail(){ v.hidden = true; document.getElementById(fid).hidden = false; }
+}
+function pauseVideos(){
+  ['v1','v2'].forEach(function(id){
+    var v = document.getElementById(id);
+    if(v && v.pause && !v.paused) v.pause();
+  });
+}
+function playPause(){
+  var id = slides[cur].id;
+  if(id!=='vid1' && id!=='vid2') return;
+  var v = document.getElementById(id==='vid1'?'v1':'v2');
+  if(v.paused){ var p = v.play(); if(p && p.catch) p.catch(function(){}); }
+  else v.pause();
+}
+
+/* ---------- session timer ---------- */
+var st=null, s0=0;
+function toggleTimer(){
+  if(st){ clearInterval(st); st=null; document.getElementById('timer').textContent='00:00'; return; }
+  s0 = Date.now();
+  st = setInterval(function(){
+    var s = Math.floor((Date.now()-s0)/1000);
+    document.getElementById('timer').textContent =
+      String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+  }, 500);
+}
+
+/* ---------- keys ---------- */
+document.addEventListener('keydown', function(e){
+  if(e.target.tagName === 'INPUT'){
+    if(e.key === 'Enter' || e.key === 'Escape') e.target.blur();
+    return;
+  }
+  var k = e.key;
+
+  if(k === 'ArrowRight' || k === ' ' || k === 'PageDown' || k === 'ArrowDown'){
+    e.preventDefault(); next(); return;
+  }
+  if(k === 'ArrowLeft' || k === 'PageUp' || k === 'ArrowUp'){
+    e.preventDefault(); prev(); return;
+  }
+  if(k === 'Home'){ e.preventDefault(); leave(); cur=0; step=0; render(); return; }
+
+  switch(k.toLowerCase()){
+    case 's': toggleClock(); break;
+    case 'p': playPause(); break;
+    case 'n': document.getElementById('notes').classList.toggle('on'); break;
+    case 't': toggleTimer(); break;
+    case 'f':
+      if(document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen();
+      break;
+    case '?': case '/':
+      document.getElementById('help').classList.toggle('on'); break;
+    case 'escape':
+      document.getElementById('help').classList.remove('on');
+      document.getElementById('notes').classList.remove('on'); break;
+  }
+});
+
+render();
+})();
+</script>
+</body>
+</html>
